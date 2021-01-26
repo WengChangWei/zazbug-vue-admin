@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import { postLogin } from '@/api/login';
 export default {
     data: function() {
         return {
@@ -45,9 +46,19 @@ export default {
         submitForm() {
             this.$refs.login.validate(valid => {
                 if (valid) {
-                    this.$message.success('登录成功');
-                    localStorage.setItem('ms_username', this.param.username);
-                    this.$router.push('/');
+                    postLogin(this.param).then(res =>{
+                        if(res.data.code == 20000){
+                            this.$message.success('登录成功');
+                            localStorage.setItem('Authorization', res.data.data);
+                            this.$router.push('/');
+                        }else{
+                            this.$message.error(res.data.message);
+                            return false;
+                        }
+                    })
+                    // this.$message.success('登录成功');
+                    // localStorage.setItem('ms_username', this.param.username);
+                    // this.$router.push('/');
                 } else {
                     this.$message.error('请输入账号和密码');
                     console.log('error submit!!');
