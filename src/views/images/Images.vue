@@ -2,9 +2,7 @@
     <div>
         <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
-                </el-breadcrumb-item>
+                <el-breadcrumb-item> <i class="el-icon-lx-cascades"></i> 基础表格 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
@@ -20,6 +18,7 @@
 
                 <el-button type="danger" @click="delAllSelection" round>批量删除</el-button>
 
+                <el-button type="primary" @click="handleEdit(0, '')" round>上传图片</el-button>
             </div>
             <el-table
                 :data="tableData"
@@ -33,30 +32,22 @@
                 <el-table-column prop="id" label="ID" width="100" align="center"></el-table-column>
                 <el-table-column label="图片(查看大图)" align="center">
                     <template slot-scope="scope">
-                        <el-image
-                            class="table-td-thumb"
-                            :src="scope.row.url"
-                            :preview-src-list="[scope.row.url]"
-                        ></el-image>
+                        <el-image class="table-td-thumb" :src="scope.row.url" :preview-src-list="[scope.row.url]"></el-image>
                     </template>
                 </el-table-column>
                 <el-table-column prop="cate" label="分类" align="center"></el-table-column>
                 <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
-                        <el-tag
-                            :type="scope.row.isShow=='是'?'success':(scope.row.isShow=='否'?'danger':'')"
-                        >{{scope.row.isShow}}</el-tag>
+                        <el-tag :type="scope.row.isShow == '是' ? 'success' : scope.row.isShow == '否' ? 'danger' : ''">{{
+                            scope.row.isShow
+                        }}</el-tag>
                     </template>
                 </el-table-column>
 
                 <el-table-column prop="addTime" label="添加时间"></el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
-                        <el-button
-                            type="text"
-                            icon="el-icon-edit"
-                            @click="handleEdit(scope.$index, scope.row)"
-                        >编辑</el-button>
+                        <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
                         <!-- <el-button
                             type="text"
                             icon="el-icon-delete"
@@ -80,20 +71,34 @@
 
         <!-- 编辑弹出框 -->
         <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="70px">
+            <el-form ref="fm" label-width="70px">
+                <!-- <el-form-item label="图片" v-if="form.url">
+                    <el-image :src="form.url" style="width: 100%"></el-image>
+                </el-form-item> -->
+
                 <el-form-item label="图片">
-                    <el-image :src="form.url" style="width:100%;"></el-image>
+                    <el-upload
+                        class="avatar-uploader"
+                        action="/api/upload"
+                        :show-file-list="false"
+                        :on-success="handleAvatarSuccess"
+                        :before-upload="beforeAvatarUpload"
+                    >
+                        <img v-if="imageUrl" :src="imageUrl" width="100%" height="100%" />
+                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                    </el-upload>
                 </el-form-item>
+
                 <el-form-item label="分类">
-                    <el-select v-model="form.cate" placeholder="图片分类" class="handle-select mr10">
+                    <el-select v-model="fm.cate" placeholder="图片分类" class="handle-select mr10">
                         <el-option key="1" label="写实" value="写实"></el-option>
                         <el-option key="2" label="二次元" value="二次元"></el-option>
-                        <el-option key="2" label="练习" value="练习"></el-option>
+                        <el-option key="3" label="练习" value="练习"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="是否显示">
-                    <el-radio v-model="form.isShow" label="是">是</el-radio>
-                    <el-radio v-model="form.isShow" label="否">否</el-radio>
+                    <el-radio v-model="fm.isShow" label="是">是</el-radio>
+                    <el-radio v-model="fm.isShow" label="否">否</el-radio>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -110,6 +115,7 @@ export default {
     name: 'basetable',
     data() {
         return {
+            imageUrl:'',
             query: {
                 address: '',
                 name: '',
@@ -118,18 +124,18 @@ export default {
             },
             tableData: [
                 {
-                    id:1,
-                    url:'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1579657527,3699915753&fm=26&gp=0.jpg',
-                    cate:'练习',
-                    isShow:'否',
-                    addTime:'2021-01-27 21:53'
+                    id: 1,
+                    url: 'http://localhost:18088/image/2021/01-31/36fe65e4-ad5b-44e0-94b7-e985ebba43b4logo.jpg',
+                    cate: '练习',
+                    isShow: '否',
+                    addTime: '2021-01-27 21:53'
                 }
             ],
             multipleSelection: [],
             delList: [],
             editVisible: false,
             pageTotal: 0,
-            form: {},
+            fm: {},
             idx: -1,
             id: -1
         };
@@ -138,10 +144,28 @@ export default {
         this.getData();
     },
     methods: {
-        // 获取 easy-mock 的模拟数据
-        getData() {
-
+        handleDownload(file) {
+            console.log(file);
         },
+        handleAvatarSuccess(res, file) {
+            // this.imageUrl = URL.createObjectURL(file.raw);
+            this.imageUrl = "/api/image/" + res.data
+            this.fm.url = res.data
+        },
+        beforeAvatarUpload(file) {
+            const isJPG = file.type === 'image/jpeg';
+            const isLt1M = file.size / 1024 / 1024 < 1;
+
+            if (!isJPG) {
+                this.$message.error('上传头像图片只能是 JPG 格式!');
+            }
+            if (!isLt1M) {
+                this.$message.error('上传图片大小不能超过 1MB!');
+            }
+            return isJPG && isLt1M;
+        },
+        // 获取 easy-mock 的模拟数据
+        getData() {},
         // 触发搜索按钮
         handleSearch() {
             this.$set(this.query, 'pageIndex', 1);
@@ -178,12 +202,14 @@ export default {
             this.idx = index;
             this.form = row;
             this.editVisible = true;
+            this.imageUrl = row.url
         },
         // 保存编辑
         saveEdit() {
             this.editVisible = false;
-            this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-            this.$set(this.tableData, this.idx, this.form);
+            console.log(this.fm)
+            // this.$message.success(`修改第 ${this.idx + 1} 行成功`);
+            // this.$set(this.tableData, this.idx, this.form);
         },
         // 分页导航
         handlePageChange(val) {
@@ -222,5 +248,28 @@ export default {
     margin: auto;
     width: 40px;
     height: 40px;
+}
+.avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+    border-color: #409eff;
+}
+.avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+}
+.avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
 }
 </style>
