@@ -2,37 +2,38 @@
     <div>
         <el-row :gutter="20">
             <el-col :span="8">
-                <el-card shadow="hover" class="mgb20" style="height:252px;">
+                <el-card shadow="hover" class="mgb20" style="height: 252px">
                     <div class="user-info">
-                        <img src="../../assets/img/img.jpg" class="user-avator" alt />
+                        <img v-if="user.headPic" :src="user.headPic" class="user-avator" alt />
+                        <img v-else src="../../assets/img/img.png" class="user-avator" alt />
                         <div class="user-info-cont">
-                            <div class="user-info-name">{{name}}</div>
-                            <div>{{role}}</div>
+                            <div class="user-info-name">{{ user.username }}</div>
+                            <div>超级管理员</div>
                         </div>
                     </div>
                     <div class="user-info-list">
                         上次登录时间：
-                        <span>2019-11-01</span>
+                        <span>{{ user.lastLoginTime }}</span>
                     </div>
                     <div class="user-info-list">
-                        上次登录地点：
-                        <span>东莞</span>
+                        上次登录IP：&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span>{{ user.lastLoginIp }}</span>
                     </div>
                 </el-card>
-                <el-card shadow="hover" style="height:252px;">
+                <el-card shadow="hover" style="height: 252px">
                     <div slot="header" class="clearfix">
-                        <span>语言详情</span>
-                    </div>Vue
-                    <el-progress :percentage="71.3" color="#42b983"></el-progress>JavaScript
-                    <el-progress :percentage="24.1" color="#f1e05a"></el-progress>CSS
-                    <el-progress :percentage="13.7"></el-progress>HTML
-                    <el-progress :percentage="5.9" color="#f56c6c"></el-progress>
+                        <span>相册详情</span>
+                    </div>
+                    写实<el-progress :percentage="71.3" color="#42b983"></el-progress>
+                    场景<el-progress :percentage="24.1" color="#f1e05a"></el-progress>
+                    二次元<el-progress :percentage="13.7"></el-progress>
+                    怪物<el-progress :percentage="5.9" color="#f56c6c"></el-progress>
                 </el-card>
             </el-col>
             <el-col :span="16">
                 <el-row :gutter="20" class="mgb20">
                     <el-col :span="8">
-                        <el-card shadow="hover" :body-style="{padding: '0px'}">
+                        <el-card shadow="hover" :body-style="{ padding: '0px' }">
                             <div class="grid-content grid-con-1">
                                 <i class="el-icon-lx-people grid-con-icon"></i>
                                 <div class="grid-cont-right">
@@ -43,7 +44,7 @@
                         </el-card>
                     </el-col>
                     <el-col :span="8">
-                        <el-card shadow="hover" :body-style="{padding: '0px'}">
+                        <el-card shadow="hover" :body-style="{ padding: '0px' }">
                             <div class="grid-content grid-con-2">
                                 <i class="el-icon-lx-notice grid-con-icon"></i>
                                 <div class="grid-cont-right">
@@ -54,7 +55,7 @@
                         </el-card>
                     </el-col>
                     <el-col :span="8">
-                        <el-card shadow="hover" :body-style="{padding: '0px'}">
+                        <el-card shadow="hover" :body-style="{ padding: '0px' }">
                             <div class="grid-content grid-con-3">
                                 <i class="el-icon-lx-goods grid-con-icon"></i>
                                 <div class="grid-cont-right">
@@ -65,38 +66,21 @@
                         </el-card>
                     </el-col>
                 </el-row>
-                <el-card shadow="hover" style="height:403px;">
+                <el-card shadow="hover" style="height: 403px">
                     <div slot="header" class="clearfix">
-                        <span>待办事项</span>
-                        <el-button style="float: right; padding: 3px 0" type="text">添加</el-button>
+                        <span>图片上传统计</span>
+                        <!-- <el-button style="float: right; padding: 3px 0" type="text">添加</el-button> -->
                     </div>
-                    <el-table :show-header="false" :data="todoList" style="width:100%;">
-                        <el-table-column width="40">
-                            <template slot-scope="scope">
-                                <el-checkbox v-model="scope.row.status"></el-checkbox>
-                            </template>
-                        </el-table-column>
-                        <el-table-column>
-                            <template slot-scope="scope">
-                                <div
-                                    class="todo-item"
-                                    :class="{'todo-item-del': scope.row.status}"
-                                >{{scope.row.title}}</div>
-                            </template>
-                        </el-table-column>
-                        <el-table-column width="60">
-                            <template>
-                                <i class="el-icon-edit"></i>
-                                <i class="el-icon-delete"></i>
-                            </template>
-                        </el-table-column>
-                    </el-table>
+                    <el-card shadow="hover">
+                        <div id="main" :style="{ width: '1000px', height: '300px' }"></div>
+                    </el-card>
                 </el-card>
             </el-col>
         </el-row>
-        <el-row :gutter="20">
+        <!-- <el-row :gutter="20">
             <el-col :span="12">
                 <el-card shadow="hover">
+                    <div id="main" :style="{ width: '300px', height: '300px' }"></div>
                     <schart ref="bar" class="schart" canvasId="bar" :options="options"></schart>
                 </el-card>
             </el-col>
@@ -105,18 +89,20 @@
                     <schart ref="line" class="schart" canvasId="line" :options="options2"></schart>
                 </el-card>
             </el-col>
-        </el-row>
+        </el-row> -->
     </div>
 </template>
 
 <script>
 import Schart from 'vue-schart';
 import bus from '../../components/common/bus';
+import { getUserInfo } from '../../api/index';
+import echarts from 'echarts';
 export default {
     name: 'dashboard',
     data() {
         return {
-            name: localStorage.getItem('ms_username'),
+            user: [],
             todoList: [
                 {
                     title: '今天要修复100个bug',
@@ -172,50 +158,7 @@ export default {
                     name: '2018/09/10',
                     value: 1065
                 }
-            ],
-            options: {
-                type: 'bar',
-                title: {
-                    text: '最近一周各品类销售图'
-                },
-                xRorate: 25,
-                labels: ['周一', '周二', '周三', '周四', '周五'],
-                datasets: [
-                    {
-                        label: '家电',
-                        data: [234, 278, 270, 190, 230]
-                    },
-                    {
-                        label: '百货',
-                        data: [164, 178, 190, 135, 160]
-                    },
-                    {
-                        label: '食品',
-                        data: [144, 198, 150, 235, 120]
-                    }
-                ]
-            },
-            options2: {
-                type: 'line',
-                title: {
-                    text: '最近几个月各品类销售趋势图'
-                },
-                labels: ['6月', '7月', '8月', '9月', '10月'],
-                datasets: [
-                    {
-                        label: '家电',
-                        data: [234, 278, 270, 190, 230]
-                    },
-                    {
-                        label: '百货',
-                        data: [164, 178, 150, 135, 160]
-                    },
-                    {
-                        label: '食品',
-                        data: [74, 118, 200, 235, 90]
-                    }
-                ]
-            }
+            ]
         };
     },
     components: {
@@ -226,10 +169,17 @@ export default {
             return this.name === 'admin' ? '超级管理员' : '普通用户';
         }
     },
-    // created() {
-    //     this.handleListener();
-    //     this.changeDate();
-    // },
+    created() {
+        this.getUser();
+
+        // this.handleListener();
+        // this.changeDate();
+    },
+    mounted() {
+        this.$nextTick(function () {
+            this.getChart();
+        });
+    },
     // activated() {
     //     this.handleListener();
     // },
@@ -238,6 +188,43 @@ export default {
     //     bus.$off('collapse', this.handleBus);
     // },
     methods: {
+        getChart() {
+            var chartDom = document.getElementById('main');
+            var myChart = echarts.init(chartDom);
+            var option;
+
+            option = {
+                color:['#409eff'],
+                xAxis: {
+                    type: 'category',
+                    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        data: [120, 200, 150, 80, 70, 110, 130],
+                        type: 'bar',
+                        showBackground: true,
+                        backgroundStyle: {
+                            color: 'rgba(180, 180, 180, 0.2)'
+                        }
+                    }
+                ]
+            };
+
+            option && myChart.setOption(option);
+        },
+        getUser() {
+            getUserInfo().then((res) => {
+                console.log(res);
+                if (res.data.flag) {
+                    this.user = res.data.data;
+                    console.log(this.user);
+                }
+            });
+        },
         changeDate() {
             const now = new Date().getTime();
             this.data.forEach((item, index) => {

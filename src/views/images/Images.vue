@@ -7,14 +7,14 @@
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-select v-model="query.address" placeholder="图片分类" class="handle-select mr10">
+                <!-- <el-select v-model="query.address" placeholder="图片分类" class="handle-select mr10">
                     <el-option key="0" label="请选择" value="请选择"></el-option>
                     <el-option key="1" label="写实" value="写实"></el-option>
                     <el-option key="2" label="二次元" value="二次元"></el-option>
                     <el-option key="3" label="练习" value="练习"></el-option>
-                </el-select>
+                </el-select> -->
                 <!-- <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input> -->
-                <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+                <!-- <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button> -->
 
                 <!-- <el-button type="danger" @click="delAllSelection" round>批量删除</el-button> -->
 
