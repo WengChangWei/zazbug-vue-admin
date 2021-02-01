@@ -17,7 +17,7 @@ const service = axios.create({
 service.interceptors.request.use(config => {
     // 发请求钱做的处理 , 数据转化 , 配置请求头 , 设置token , 设置loading等
     config.data = JSON.stringify(config.data); // 数据转化 , 也可以用QS
-    console.log(config)
+    // console.log(config)
     config.headers = {
         'Content-Type':'application/json' // 请求头
     }

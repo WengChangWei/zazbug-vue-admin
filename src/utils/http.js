@@ -10,7 +10,7 @@ const http = {
     get(url,data){
         const config = {
             method: 'get',
-            url:url
+            url:url + this.formatParams(data)
         }
         if(data) config.data = data
         return request(config)
@@ -26,8 +26,8 @@ const http = {
     },
 
     put(url,data){
-        const config = {
-            method: 'get',
+        const config = { 
+            method: 'put',
             url:url
         }
         if(data) config.data = data
@@ -36,11 +36,18 @@ const http = {
 
     delete(url,data){
         const config = {
-            method: 'get',
+            method: 'delete',
             url:url
         }
         if(data) config.data = data
         return request(config)
+    },
+    formatParams(data){
+        let arr = [];
+        for (let name in data) {
+            arr.push(encodeURIComponent(data[name]));
+        }
+        return arr.join("/");
     }
 }
 

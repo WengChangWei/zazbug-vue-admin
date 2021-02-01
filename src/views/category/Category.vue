@@ -10,7 +10,7 @@
         <div class="container">
             <div class="handle-box">
                 <el-button type="primary" round @click="handleEdit('','')">添加分类</el-button>
-                <el-button type="danger" round @click="delAllSelection">批量删除</el-button>
+                <!-- <el-button type="danger" round @click="delAllSelection">批量删除</el-button> -->
                 <!-- <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
                     <el-option key="1" label="广东省" value="广东省"></el-option>
                     <el-option key="2" label="湖南省" value="湖南省"></el-option>
@@ -32,15 +32,15 @@
                 <el-table-column label="是否显示">
                     <template slot-scope="scope">
                         <el-tag
-                            :type="scope.row.isShow=='是'?'success':(scope.row.isShow=='否'?'danger':'')"
-                        >{{scope.row.isShow}}</el-tag>
+                            :type="scope.row.isShow=='1'?'success':(scope.row.isShow=='0'?'danger':'')"
+                        >{{status[scope.row.isShow]}}</el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column prop="sort" label="排序"></el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
                         <el-button type="primary" icon="el-icon-edit" circle @click="handleEdit(scope.$index, scope.row)"></el-button>
-                        <el-button type="danger" icon="el-icon-delete" circle @click="handleDelete(scope.$index, scope.row)"></el-button>
+                        <!-- <el-button type="danger" icon="el-icon-delete" circle @click="handleDelete(scope.$index, scope.row)"></el-button> -->
                     </template>
                 </el-table-column>
             </el-table>
@@ -58,7 +58,7 @@
 
         <!-- 编辑弹出框 -->
         <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="70px">
+            <el-form label-width="70px">
                 <el-form-item label="ID">
                     <el-input v-model="form.id" disabled></el-input>
                 </el-form-item>
@@ -66,8 +66,8 @@
                     <el-input v-model="form.name"></el-input>
                 </el-form-item>
                 <el-form-item label="是否显示">
-                    <el-radio v-model="form.isShow" label="是">是</el-radio>
-                    <el-radio v-model="form.isShow" label="否">否</el-radio>
+                    <el-radio v-model="form.isShow" label="1">是</el-radio>
+                    <el-radio v-model="form.isShow" label="0">否</el-radio>
                 </el-form-item>
                 <el-form-item label="排序">
                     <el-input v-model="form.sort"></el-input>
@@ -83,6 +83,7 @@
 
 <script>
 import { fetchData } from '../../api/index';
+import { findPageByList, add, update } from '../../api/category';
 export default {
     name: 'basetable',
     data() {
@@ -93,33 +94,15 @@ export default {
                 pageIndex: 1,
                 pageSize: 10
             },
-            tableData: [
-                {
-                    id : 1,
-                    name : '写实',
-                    sort : 0,
-                    isShow : '是'
-                },
-                {
-                    id : 2,
-                    name : '二次元',
-                    sort : 0,
-                    isShow : '否'
-                },
-                {
-                    id : 3,
-                    name : '练习',
-                    sort : 0,
-                    isShow : '是'
-                }
-            ],
+            tableData: [],
             multipleSelection: [],
             delList: [],
             editVisible: false,
             pageTotal: 0,
             form: {},
             idx: -1,
-            id: -1
+            id: -1,
+            status:['隐藏','显示']
         };
     },
     created() {
@@ -128,7 +111,13 @@ export default {
     methods: {
         // 获取
         getData() {
-
+            let params = {
+                page:this.query.pageIndex,
+                size:this.query.pageSize
+            }
+            findPageByList(params).then((res)=>{
+                this.tableData = res.data.data.list
+            })
         },
         // 触发搜索按钮
         handleSearch() {
@@ -164,14 +153,41 @@ export default {
         // 编辑操作
         handleEdit(index, row) {
             this.idx = index;
-            this.form = row;
+            if(row){
+                this.form = row;
+            }else{
+                this.form = {
+                    id:0
+                }
+            }
             this.editVisible = true;
         },
         // 保存编辑
         saveEdit() {
             this.editVisible = false;
-            this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-            this.$set(this.tableData, this.idx, this.form);
+            if(this.form.id == 0){
+                // 添加
+                add(this.form).then((res)=>{
+                    if(res.data.flag){
+                        this.$message.success(`添加成功`);
+                        this.getData()
+                    }else{
+                        this.$message.error(`添加失败`);
+                    }
+                })
+
+            }else{
+                // 修改
+                update(this.form).then((res)=>{
+                    if(res.data.flag){
+                        this.$message.success(`修改成功`);
+                        this.getData()
+                    }else{
+                        this.$message.error(`修改失败`);
+                    }
+                })
+
+            }
         },
         // 分页导航
         handlePageChange(val) {
