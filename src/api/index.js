@@ -8,3 +8,7 @@ import http from '../utils/http';
  export function getUserInfo(){
      return http.get('/user');
  }
+
+ export function putUserInfo(params){
+     return http.put('/user',params);
+ }

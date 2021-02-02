@@ -2,10 +2,23 @@
     <div>
         <el-row :gutter="20">
             <el-col :span="8">
+                <!-- 管理员信息 -->
                 <el-card shadow="hover" class="mgb20" style="height: 252px">
                     <div class="user-info">
-                        <img v-if="user.headPic" :src="user.headPic" class="user-avator" alt />
-                        <img v-else src="../../assets/img/img.png" class="user-avator" alt />
+                        <label>
+                            <img v-if="user.headPic" :src="user.headPic" class="user-avator" alt />
+                            <img v-else src="../../assets/img/img.png" class="user-avator" alt />
+                            <el-upload
+                                v-show="false"
+                                class="avatar-uploader"
+                                action="/api/upload"
+                                :show-file-list="false"
+                                :on-success="handleAvatarSuccess"
+                                :before-upload="beforeAvatarUpload"
+                            >
+                            </el-upload>
+                        </label>
+
                         <div class="user-info-cont">
                             <div class="user-info-name">{{ user.username }}</div>
                             <div>超级管理员</div>
@@ -20,14 +33,16 @@
                         <span>{{ user.lastLoginIp }}</span>
                     </div>
                 </el-card>
+
                 <el-card shadow="hover" style="height: 252px">
                     <div slot="header" class="clearfix">
                         <span>相册详情</span>
                     </div>
-                    写实<el-progress :percentage="71.3" color="#42b983"></el-progress>
-                    场景<el-progress :percentage="24.1" color="#f1e05a"></el-progress>
-                    二次元<el-progress :percentage="13.7"></el-progress>
-                    怪物<el-progress :percentage="5.9" color="#f56c6c"></el-progress>
+                    写实<el-progress :percentage="71.3" color="#42b983"></el-progress> 场景<el-progress
+                        :percentage="24.1"
+                        color="#f1e05a"
+                    ></el-progress>
+                    二次元<el-progress :percentage="13.7"></el-progress> 怪物<el-progress :percentage="5.9" color="#f56c6c"></el-progress>
                 </el-card>
             </el-col>
             <el-col :span="16">
@@ -96,7 +111,7 @@
 <script>
 import Schart from 'vue-schart';
 import bus from '../../components/common/bus';
-import { getUserInfo } from '../../api/index';
+import { getUserInfo, putUserInfo } from '../../api/index';
 import echarts from 'echarts';
 export default {
     name: 'dashboard',
@@ -188,13 +203,40 @@ export default {
     //     bus.$off('collapse', this.handleBus);
     // },
     methods: {
+        handleAvatarSuccess(res, file) {
+            // this.imageUrl = URL.createObjectURL(file.raw);
+            // 修改头像
+            if(res.flag){
+                let img = res.data
+                let userInfo = this.user
+                userInfo.headPic = img
+                putUserInfo(userInfo).then(res=>{
+                    if(res.data.flag){
+                        this.user.headPic = img
+                        this.$message.success('修改头像成功')
+                    }
+                })
+            }
+        },
+        beforeAvatarUpload(file) {
+            const isJPG = file.type === 'image/jpeg';
+            const isLt2M = file.size / 1024 / 1024 < 1;
+
+            if (!isJPG) {
+                this.$message.error('上传头像图片只能是 JPG 格式!');
+            }
+            if (!isLt2M) {
+                this.$message.error('上传头像图片大小不能超过 1MB!');
+            }
+            return isJPG && isLt2M;
+        },
         getChart() {
             var chartDom = document.getElementById('main');
             var myChart = echarts.init(chartDom);
             var option;
 
             option = {
-                color:['#409eff'],
+                color: ['#409eff'],
                 xAxis: {
                     type: 'category',
                     data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -218,10 +260,8 @@ export default {
         },
         getUser() {
             getUserInfo().then((res) => {
-                console.log(res);
                 if (res.data.flag) {
                     this.user = res.data.data;
-                    console.log(this.user);
                 }
             });
         },
