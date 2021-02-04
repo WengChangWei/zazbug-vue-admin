@@ -35,9 +35,14 @@
                         <el-image class="table-td-thumb" :src="scope.row.url" :preview-src-list="[scope.row.url]"></el-image>
                     </template>
                 </el-table-column>
-                <el-table-column label="分类" align="center">
+                <el-table-column label="一级分类" align="center">
                     <template slot-scope="scope">
-                        {{ scope.row.category.name }}
+                        {{ scope.row.categoryByOne.name }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="二级分类" align="center">
+                    <template slot-scope="scope">
+                        {{ scope.row.categoryByTwo.name }}
                     </template>
                 </el-table-column>
                 <el-table-column label="状态" align="center">
@@ -93,9 +98,12 @@
                     </el-upload>
                 </el-form-item>
 
-                <el-form-item label="分类">
-                    <el-select v-model="form.cateId" placeholder="图片分类" class="handle-select mr10">
+                <el-form-item label="图片分类">
+                    <el-select v-model="form.cateId1" placeholder="一级分类" class="handle-select mr10" @change="changeByCateList()">
                         <el-option v-for="item in cateList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                    </el-select>
+                    <el-select v-model="form.cateId2" placeholder="二级分类" class="handle-select mr10" @change="setCateId2()">
+                        <el-option v-for="item in childrenList" :key="item.name" :label="item.name" :value="item.id"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="是否显示">
@@ -135,13 +143,28 @@ export default {
             form: {},
             idx: -1,
             id: -1,
-            status: ['隐藏', '显示']
+            status: ['隐藏', '显示'],
+            childrenList: []
         };
     },
     created() {
         this.getData();
     },
     methods: {
+        setCateId2() {
+            this.$forceUpdate();
+        },
+        // 选择分类
+        changeByCateList(sign = false) {
+            if (!sign) this.form.cateId2 = '';
+            this.cateList.forEach((el) => {
+                if (el.id == this.form.cateId1) {
+                    if (el.children) {
+                        this.childrenList = el.children;
+                    }
+                }
+            });
+        },
         handleDownload(file) {
             console.log(file);
         },
@@ -219,16 +242,17 @@ export default {
                 this.form = row;
             } else {
                 this.form = {
-                    id: 0
+                    id: 0,
+                    isShow: '1'
                 };
             }
             this.editVisible = true;
             this.imageUrl = row.url;
+            this.changeByCateList(true);
         },
         // 保存编辑
         saveEdit() {
             this.editVisible = false;
-
             if (this.form.id == 0) {
                 imagesAdd(this.form).then((res) => {
                     if (res.data.flag) {

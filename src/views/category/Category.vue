@@ -2,14 +2,12 @@
     <div>
         <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
-                </el-breadcrumb-item>
+                <el-breadcrumb-item> <i class="el-icon-lx-cascades"></i> 基础表格 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-button type="primary" round @click="handleEdit('','')">添加分类</el-button>
+                <el-button type="primary" round @click="handleEdit('', '')">添加分类</el-button>
                 <!-- <el-button type="danger" round @click="delAllSelection">批量删除</el-button> -->
                 <!-- <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
                     <el-option key="1" label="广东省" value="广东省"></el-option>
@@ -29,11 +27,12 @@
                 <el-table-column type="selection" width="100" align="center"></el-table-column>
                 <el-table-column prop="id" label="ID" width="100" align="center"></el-table-column>
                 <el-table-column prop="name" label="分类名称"></el-table-column>
+                <el-table-column prop="parentCate.name" label="上级分类"></el-table-column>
                 <el-table-column label="是否显示">
                     <template slot-scope="scope">
-                        <el-tag
-                            :type="scope.row.isShow=='1'?'success':(scope.row.isShow=='0'?'danger':'')"
-                        >{{status[scope.row.isShow]}}</el-tag>
+                        <el-tag :type="scope.row.isShow == '1' ? 'success' : scope.row.isShow == '0' ? 'danger' : ''">{{
+                            status[scope.row.isShow]
+                        }}</el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column prop="sort" label="排序"></el-table-column>
@@ -65,6 +64,12 @@
                 <el-form-item label="分类名称">
                     <el-input v-model="form.name"></el-input>
                 </el-form-item>
+                <el-form-item label="所属分类">
+                    <el-select v-model="form.parentId" placeholder="请选择" class="handle-select mr10">
+                        <el-option label="顶级分类" value="0"></el-option>
+                        <el-option v-for="item in cateList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                    </el-select>
+                </el-form-item>
                 <el-form-item label="是否显示">
                     <el-radio v-model="form.isShow" label="1">是</el-radio>
                     <el-radio v-model="form.isShow" label="0">否</el-radio>
@@ -84,6 +89,7 @@
 <script>
 import { fetchData } from '../../api/index';
 import { findPageByList, add, update } from '../../api/category';
+import { cateFindAll } from '../../api/category';
 export default {
     name: 'basetable',
     data() {
@@ -102,22 +108,32 @@ export default {
             form: {},
             idx: -1,
             id: -1,
-            status:['隐藏','显示']
+            status: ['隐藏', '显示'],
+            cateList: []
         };
     },
     created() {
+        this.getData();
+    },
+    activated(){
         this.getData();
     },
     methods: {
         // 获取
         getData() {
             let params = {
-                page:this.query.pageIndex,
-                size:this.query.pageSize
-            }
-            findPageByList(params).then((res)=>{
-                this.tableData = res.data.data.list
-            })
+                page: this.query.pageIndex,
+                size: this.query.pageSize
+            };
+            findPageByList(params).then((res) => {
+                this.tableData = res.data.data.list;
+            });
+            // 所有分类
+            cateFindAll().then((res) => {
+                if (res.data.flag) {
+                    this.cateList = res.data.data;
+                }
+            });
         },
         // 触发搜索按钮
         handleSearch() {
@@ -153,40 +169,38 @@ export default {
         // 编辑操作
         handleEdit(index, row) {
             this.idx = index;
-            if(row){
+            if (row) {
                 this.form = row;
-            }else{
+            } else {
                 this.form = {
-                    id:0
-                }
+                    id: 0
+                };
             }
             this.editVisible = true;
         },
         // 保存编辑
         saveEdit() {
             this.editVisible = false;
-            if(this.form.id == 0){
+            if (this.form.id == 0) {
                 // 添加
-                add(this.form).then((res)=>{
-                    if(res.data.flag){
+                add(this.form).then((res) => {
+                    if (res.data.flag) {
                         this.$message.success(`添加成功`);
-                        this.getData()
-                    }else{
+                        this.getData();
+                    } else {
                         this.$message.error(`添加失败`);
                     }
-                })
-
-            }else{
+                });
+            } else {
                 // 修改
-                update(this.form).then((res)=>{
-                    if(res.data.flag){
+                update(this.form).then((res) => {
+                    if (res.data.flag) {
                         this.$message.success(`修改成功`);
-                        this.getData()
-                    }else{
+                        this.getData();
+                    } else {
                         this.$message.error(`修改失败`);
                     }
-                })
-
+                });
             }
         },
         // 分页导航

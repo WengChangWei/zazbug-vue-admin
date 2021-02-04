@@ -30,6 +30,11 @@ export default new Router({
                     meta: { title: '相册列表' }
                 },
                 {
+                    path: '/user',
+                    component: () => import(/* webpackChunkName: "dashboard" */ '../views/user/User.vue'),
+                    meta: { title: '画师资料' }
+                },
+                {
                     path: '/icon',
                     component: () => import(/* webpackChunkName: "icon" */ '../components/page/Icon.vue'),
                     meta: { title: '自定义图标' }

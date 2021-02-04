@@ -10,5 +10,5 @@ import http from '../utils/http';
  }
 
  export function putUserInfo(params){
-     return http.put('/user',params);
+     return http.put('/user/updateUserInfo',params);
  }
