@@ -5,19 +5,8 @@
                 <!-- 管理员信息 -->
                 <el-card shadow="hover" class="mgb20" style="height: 252px">
                     <div class="user-info">
-                        <label>
-                            <img v-if="user.headPic" :src="user.headPic" class="user-avator" alt />
-                            <img v-else src="../../assets/img/img.png" class="user-avator" alt />
-                            <el-upload
-                                v-show="false"
-                                class="avatar-uploader"
-                                action="/api/upload"
-                                :show-file-list="false"
-                                :on-success="handleAvatarSuccess"
-                                :before-upload="beforeAvatarUpload"
-                            >
-                            </el-upload>
-                        </label>
+                        <img v-if="user.headPic" :src="user.headPic" class="user-avator" alt />
+                        <img v-else src="../../assets/img/img.png" class="user-avator" alt />
 
                         <div class="user-info-cont">
                             <div class="user-info-name">{{ user.username }}</div>
@@ -206,16 +195,16 @@ export default {
         handleAvatarSuccess(res, file) {
             // this.imageUrl = URL.createObjectURL(file.raw);
             // 修改头像
-            if(res.flag){
-                let img = res.data
-                let userInfo = this.user
-                userInfo.headPic = img
-                putUserInfo(userInfo).then(res=>{
-                    if(res.data.flag){
-                        this.user.headPic = img
-                        this.$message.success('修改头像成功')
+            if (res.flag) {
+                let img = res.data;
+                let userInfo = this.user;
+                userInfo.headPic = img;
+                putUserInfo(userInfo).then((res) => {
+                    if (res.data.flag) {
+                        this.user.headPic = img;
+                        this.$message.success('修改头像成功');
                     }
-                })
+                });
             }
         },
         beforeAvatarUpload(file) {

@@ -92,6 +92,7 @@
                         :show-file-list="false"
                         :on-success="handleAvatarSuccess"
                         :before-upload="beforeAvatarUpload"
+                        :headers="uploadHeader"
                     >
                         <img v-if="form.url" :src="form.url" width="100%" height="100%" />
                         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -144,7 +145,8 @@ export default {
             idx: -1,
             id: -1,
             status: ['隐藏', '显示'],
-            childrenList: []
+            childrenList: [],
+            uploadHeader: {Authorization:localStorage.getItem("Authorization")}
         };
     },
     created() {
@@ -168,9 +170,11 @@ export default {
         handleDownload(file) {
             console.log(file);
         },
+        // 上传成功
         handleAvatarSuccess(res, file) {
             // this.imageUrl = URL.createObjectURL(file.raw);
             this.form.url = res.data;
+            this.setCateId2()
         },
         beforeAvatarUpload(file) {
             const isJPG = file.type === 'image/jpeg';
@@ -193,6 +197,7 @@ export default {
             findPageByList(params).then((res) => {
                 if (res.data.flag) {
                     this.tableData = res.data.data.list;
+                    this.pageTotal = res.data.data.total
                 } else {
                     this.$message.error('获取失败');
                 }
@@ -247,7 +252,6 @@ export default {
                 };
             }
             this.editVisible = true;
-            this.imageUrl = row.url;
             this.changeByCateList(true);
         },
         // 保存编辑
